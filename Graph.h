@@ -78,6 +78,26 @@ class Graph {
          * @param cost Custo da aresta
          */
         void insertEdge(string keyA, string keyB, int cost);
+
+        /**
+         * @brief Remove uma aresta do grafo.
+         * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
+         * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
+         */
+        void deleteEdge(string keyA, string keyB);
+
+        /**
+         * @brief Remove uma aresta de um grafo não-direcionado.
+         * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
+         * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
+         */
+        void deleteUndirectedEdge(string keyA, string keyB);
+
+        /**
+         * @brief Remove um vértice do grafo e apaga todas as arestas conectadas à ele.
+         * @param keyA Chave do vértice a ser removido.
+         */
+        void deleteVertex(string key);
 };
 
 #endif

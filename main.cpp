@@ -71,27 +71,6 @@ static int readAnyInt(const string& prompt) {
     }
 }
 
-/**
- * @brief Lê resposta 's' ou 'n' (case-insensitive) com re-prompt.
- * @param prompt Mensagem exibida.
- * @return 's' ou 'n'.
- */
-static char readYesNo(const string& prompt) {
-    while (true) {
-        cout << prompt;
-        char c;
-        if (cin >> c) {
-            clearInputLine();
-            if (c == 's' || c == 'S') return 's';
-            if (c == 'n' || c == 'N') return 'n';
-            cout << "Responda com 's' ou 'n'." << endl;
-        } else {
-            cout << "Entrada invalida. Tente novamente." << endl;
-            clearInputLine();
-        }
-    }
-}
-
 int main() {
     string binFile = "graph.bin";
 
@@ -113,14 +92,15 @@ int main() {
         graph.displayGraph();
 
         cout << "Selecione uma opcao:" << endl;
-        cout << "1. Buscar vértice" << endl;
-        cout << "2. Inserir vértice" << endl;
-        cout << "3. Inserir aresta" << endl;
-        cout << "4. Remover vértice" << endl;
-        cout << "5. Remover aresta" << endl;
-        cout << "6. Sair" << endl;
+        cout << "1. Buscar vertice" << endl;
+        cout << "2. Imprimir arvore de espalhamento de custo minimo" << endl;
+        cout << "3. Inserir vértice" << endl;
+        cout << "4. Inserir aresta" << endl;
+        cout << "5. Remover vertice" << endl;
+        cout << "6. Remover aresta" << endl;
+        cout << "7. Sair" << endl;
 
-        int opt = readIntInRange("Escolha (1-6): ", 1, 6);
+        int opt = readIntInRange("Escolha (1-7): ", 1, 7);
 
         switch (opt)
         {
@@ -128,14 +108,14 @@ int main() {
 
                 break;
             
-            case 2:
+            case 3:
                 {
                     string key = readLine("Chave para inserir: ");
                     graph.insertVertex(key);
                 }
                 break;
 
-            case 3:
+            case 4:
                 {
                     string keyA = readLine("Primeiro vertice: ");
                     string keyB = readLine("Segundo vertice: ");
@@ -144,7 +124,22 @@ int main() {
                 }
                 break;
 
+            case 5:
+                {
+                    string key = readLine("Digite o vertice que deseja remover: ");
+                    graph.deleteVertex(key);
+                }
+                break;
+
             case 6:
+                {
+                    string keyA = readLine("Primeiro vertice: ");
+                    string keyB = readLine("Segundo vertice: ");
+                    graph.deleteUndirectedEdge(keyA, keyB);
+                }
+                break;
+
+            case 7:
                 return 0;
         }
     }

@@ -147,3 +147,44 @@ void Graph::insertEdge(string keyA, string keyB, int cost) {
     adjList[keyA].push_back({keyB, cost});
     adjList[keyB].push_back({keyA, cost});
 }
+
+/**
+ * @brief Remove uma aresta do grafo.
+ * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
+ * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
+ */
+void Graph::deleteEdge(string keyA, string keyB) {
+    auto it = adjList.find(keyA);
+    if (it == adjList.end()) {
+        cout << "Aresta nao encontrada." << endl;
+        return;
+    }
+
+    it->second.remove_if([keyB](const pair<string, int>& p){
+        return p.first == keyB;
+    });
+}
+
+/**
+ * @brief Remove uma aresta de um grafo não-direcionado.
+ * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
+ * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
+ */
+void Graph::deleteUndirectedEdge(string keyA, string keyB){
+    deleteEdge(keyA, keyB);
+    deleteEdge(keyB, keyA);
+}
+
+/**
+ * @brief Remove um vértice do grafo e apaga todas as arestas conectadas à ele.
+ * @param keyA Chave do vértice a ser removido.
+ */
+void Graph::deleteVertex(string key){
+    adjList.erase(key);
+
+    for (auto& [v, adj] : adjList) {
+        adj.remove_if([key](const pair<string, int>& p){
+            return p.first == key;
+        });
+    }
+}
