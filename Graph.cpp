@@ -8,6 +8,7 @@
  */
 
 #include "Graph.h"
+#include <iostream>
 
 using namespace std;
 
@@ -32,10 +33,10 @@ map<Key, list<pair<Neighbor, Cost>>> Graph::readGraph(const string& filename_) {
     int n;
     in.read(reinterpret_cast<char*>(&n), sizeof(int));
 
-    map<Key, list<pair<Neighbor, Cost>>> graph;
+    map<Key, list<pair<Neighbor, Cost>>> adjList;
 
     for(int i = 0; i < n; i++) {
-        int key;
+        string key;
         in.read(reinterpret_cast<char*>(&key), sizeof(int));
 
         // Lê grau do vértice
@@ -54,10 +55,10 @@ map<Key, list<pair<Neighbor, Cost>>> Graph::readGraph(const string& filename_) {
             neighbors.push_back({nb, weight});
         }
 
-        graph[key] = move(neighbors);
+        adjList[key] = move(neighbors);
     }
 
-    return graph;
+    return adjList;
 }
 
 /**
@@ -85,4 +86,37 @@ void Graph::writeGraph(const string& filename_) {
             out.write(reinterpret_cast<const char*>(&weight), sizeof(int));
         }
     }
+}
+
+/**
+ * @brief Exibe o grafo completo.
+ */
+void Graph::displayGraph() {
+    cout << "n = " << adjList.size() << endl;
+    cout << "Lista de adjacência para o grafo:" << endl;
+    for (auto& i : adjList) {
+        cout << i.first << " -> ";
+        for(auto& j : i.second) {
+            cout << j.first << "(" << j.second << ")" << " ";
+        }
+        cout << endl;
+    }
+}
+
+/**
+ * @brief Insere novo vértice no grafo
+ * @param key Chave do vértice
+ */
+void Graph::insertVertex(string key) {
+    adjList[key] = {};
+}
+
+/**
+ * @brief Insere nova aresta no grafo.
+ * @param keyA Chave do primeiro vértice a ser conectado
+ * @param keyB Chave do segundo vértice a ser conectado
+ * @param weight Peso (custo) da aresta
+ */
+void Graph::insertEdge(string keyA, string keyB, int weight) {
+    adjList[keyA].push_back({keyB, weight});
 }

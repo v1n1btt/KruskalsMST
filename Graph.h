@@ -16,8 +16,8 @@
 #include <string>
 
 using namespace std;
-using Key = int;
-using Neighbor = int;
+using Key = string;
+using Neighbor = string;
 using Cost = int;
 
 class Graph {
@@ -43,8 +43,26 @@ class Graph {
          * @brief Constrói grafo a partir do arquivo
          * @param filename_ Caminho do arquivo.
          */
-        Graph(const string& filename_);
+        explicit Graph(const string& filename_);
 
+        /**
+         * @brief Exibe o grafo completo.
+         */
+        void displayGraph();
+
+        /**
+         * @brief Insere novo vértice no grafo
+         * @param key Chave do vértice
+         */
+        void insertVertex(string key);
+
+        /**
+         * @brief Insere nova aresta no grafo.
+         * @param keyA Chave do primeiro vértice a ser conectado
+         * @param keyB Chave do segundo vértice a ser conectado
+         * @param weight Peso (custo) da aresta
+         */
+        void insertEdge(string keyA, string keyB, int weight);
 };
 
 #endif

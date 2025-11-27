@@ -29,6 +29,30 @@ static string readLine(const string& prompt) {
 }
 
 /**
+ * @brief Lê um inteiro no intervalo [minV..maxV] com re-prompt até validar.
+ * @param prompt Mensagem exibida.
+ * @param minV Valor mínimo aceito.
+ * @param maxV Valor máximo aceito.
+ * @return Inteiro validado.
+ */
+static int readIntInRange(const string& prompt, int minV, int maxV) {
+    while (true) {
+        cout << prompt;
+        int v;
+        if (cin >> v) {
+            if (v >= minV && v <= maxV) {
+                clearInputLine();
+                return v;
+            }
+            cout << "Valor invalido. Informe um numero entre " << minV << " e " << maxV << "." << endl;
+        } else {
+            cout << "Entrada invalida. Tente novamente." << endl;
+            clearInputLine();
+        }
+    }
+}
+
+/**
  * @brief Lê qualquer inteiro com re-prompt até validar.
  * @param prompt Mensagem exibida.
  * @return Inteiro lido.
@@ -86,6 +110,30 @@ int main() {
     Graph graph(binPath.string());
     
     while(true) {
-        
+        graph.displayGraph();
+
+        cout << "Selecione uma opcao:" << endl;
+        cout << "1. Buscar vértice" << endl;
+        cout << "2. Inserir vértice" << endl;
+        cout << "3. Inserir aresta" << endl;
+        cout << "4. Remover vértice" << endl;
+        cout << "5. Remover aresta" << endl;
+
+        int opt = readIntInRange("Escolha (1-5): ", 1, 5);
+
+        switch (opt)
+        {
+            case 1:
+                
+                break;
+            
+            case 2:
+
+                break;
+
+            case 3:
+                
+                break;
+        }
     }
 }
