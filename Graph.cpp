@@ -21,6 +21,18 @@ Graph::Graph(const string& filename_) {
 }
 
 /**
+ * @brief Lê uma string do arquivo binário.
+ * @return String lida do arquivo.
+ */
+string Graph::readString(ifstream& in) {
+    int len;
+    in.read(reinterpret_cast<char*>(&len), sizeof(int));
+    string s(len, '\0');
+    in.read(&s[0], len);
+    return s;
+}
+
+/**
  * @brief Lê o grafo do arquivo.
  * @param filename_ Caminho do arquivo.
  * @return Grafo carregado do arquivo.
@@ -36,8 +48,7 @@ map<Key, list<pair<Neighbor, Cost>>> Graph::readGraph(const string& filename_) {
     map<Key, list<pair<Neighbor, Cost>>> adjList;
 
     for(int i = 0; i < n; i++) {
-        string key;
-        in.read(reinterpret_cast<char*>(&key), sizeof(int));
+        string key = readString(in);
 
         // Lê grau do vértice
         int degree;
@@ -47,18 +58,27 @@ map<Key, list<pair<Neighbor, Cost>>> Graph::readGraph(const string& filename_) {
 
         // Lê vértices adjacentes e seus pesos
         for(int j = 0; j < degree; j++){
-            int nb;
-            int weight;
+            string nb = readString(in);
+            int cost;
 
-            in.read(reinterpret_cast<char*>(&nb), sizeof(int));
-            in.read(reinterpret_cast<char*>(&weight), sizeof(int));
-            neighbors.push_back({nb, weight});
+            in.read(reinterpret_cast<char*>(&cost), sizeof(int));
+            neighbors.push_back({nb, cost});
         }
 
         adjList[key] = move(neighbors);
     }
 
     return adjList;
+}
+
+/**
+ * @brief Escreve uma string no arquivo binário.
+ * @param s String a ser escrita.
+ */
+void Graph::writeString(ofstream& out, const string& s) {
+    int len = s.size();
+    out.write(reinterpret_cast<const char*>(&len), sizeof(int));
+    out.write(s.data(), len);
 }
 
 /**
@@ -74,16 +94,16 @@ void Graph::writeGraph(const string& filename_) {
     out.write(reinterpret_cast<const char*>(&n), sizeof(int));
 
     for(const auto& [key, neighbors] : adjList){
-        out.write(reinterpret_cast<const char*>(&key), sizeof(int));
+        writeString(out, key);
 
         // Escreve grau do vértice
         int degree = neighbors.size();
         out.write(reinterpret_cast<const char*>(&degree), sizeof(int));
 
         // Escreve vértices adjacentes com pesos
-        for(const auto& [nb, weight] : neighbors){
-            out.write(reinterpret_cast<const char*>(&nb), sizeof(int));
-            out.write(reinterpret_cast<const char*>(&weight), sizeof(int));
+        for(const auto& [nb, cost] : neighbors){
+            writeString(out, nb);
+            out.write(reinterpret_cast<const char*>(&cost), sizeof(int));
         }
     }
 }
@@ -115,8 +135,8 @@ void Graph::insertVertex(string key) {
  * @brief Insere nova aresta no grafo.
  * @param keyA Chave do primeiro vértice a ser conectado
  * @param keyB Chave do segundo vértice a ser conectado
- * @param weight Peso (custo) da aresta
+ * @param cost Custo da aresta
  */
-void Graph::insertEdge(string keyA, string keyB, int weight) {
-    adjList[keyA].push_back({keyB, weight});
+void Graph::insertEdge(string keyA, string keyB, int cost) {
+    adjList[keyA].push_back({keyB, cost});
 }
