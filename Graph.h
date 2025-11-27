@@ -23,7 +23,7 @@ using Cost = int;
 class Graph {
     private:
         std::string filename;
-        map<Key, list<pair<Neighbor, Cost>>> graph;
+        map<Key, list<pair<Neighbor, Cost>>> adjList;
 
         /**
          * @brief Lê o grafo do arquivo.

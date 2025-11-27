@@ -16,7 +16,7 @@ using namespace std;
  * @param filename_ Caminho do arquivo.
  */
 Graph::Graph(const string& filename_) {
-    graph = readGraph(filename_);
+    adjList = readGraph(filename_);
 }
 
 /**
@@ -69,10 +69,10 @@ void Graph::writeGraph(const string& filename_) {
     if (!out) return;
 
     // Escreve número de vértices
-    int n = graph.size();
+    int n = adjList.size();
     out.write(reinterpret_cast<const char*>(&n), sizeof(int));
 
-    for(const auto& [key, neighbors] : graph){
+    for(const auto& [key, neighbors] : adjList){
         out.write(reinterpret_cast<const char*>(&key), sizeof(int));
 
         // Escreve grau do vértice
