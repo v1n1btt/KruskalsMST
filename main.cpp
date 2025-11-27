@@ -118,22 +118,34 @@ int main() {
         cout << "3. Inserir aresta" << endl;
         cout << "4. Remover vértice" << endl;
         cout << "5. Remover aresta" << endl;
+        cout << "6. Sair" << endl;
 
-        int opt = readIntInRange("Escolha (1-5): ", 1, 5);
+        int opt = readIntInRange("Escolha (1-6): ", 1, 6);
 
         switch (opt)
         {
             case 1:
-                
+
                 break;
             
             case 2:
-
+                {
+                    string key = readLine("Chave para inserir: ");
+                    graph.insertVertex(key);
+                }
                 break;
 
             case 3:
-                
+                {
+                    string keyA = readLine("Primeiro vertice: ");
+                    string keyB = readLine("Segundo vertice: ");
+                    int cost = readAnyInt("Custo da aresta: ");
+                    graph.insertEdge(keyA, keyB, cost);
+                }
                 break;
+
+            case 6:
+                return 0;
         }
     }
 }

@@ -33,10 +33,9 @@ class Graph {
 
         /**
          * @brief Lê o grafo do arquivo.
-         * @param filename_ Caminho do arquivo.
          * @return Grafo carregado do arquivo.
          */
-        map<Key, list<pair<Neighbor, Cost>>> readGraph(const string& filename_);
+        map<Key, list<pair<Neighbor, Cost>>> readGraph();
 
         /**
          * @brief Escreve uma string no arquivo binário.
@@ -46,9 +45,8 @@ class Graph {
 
         /**
          * @brief Persiste o grafo no arquivo.
-         * @param filename_ Caminho do arquivo.
          */
-        void writeGraph(const string& filename_);
+        void writeGraph();
 
     public:
         /**
@@ -56,6 +54,11 @@ class Graph {
          * @param filename_ Caminho do arquivo.
          */
         explicit Graph(const string& filename_);
+
+        /**
+         * @brief Salva as alterações no arquivo binário.
+         */
+        ~Graph();
 
         /**
          * @brief Exibe o grafo completo.

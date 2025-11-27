@@ -17,7 +17,15 @@ using namespace std;
  * @param filename_ Caminho do arquivo.
  */
 Graph::Graph(const string& filename_) {
-    adjList = readGraph(filename_);
+    filename = filename_;
+    adjList = readGraph();
+}
+
+/**
+ * @brief Salva as alterações no arquivo binário.
+ */
+Graph::~Graph() {
+    writeGraph();
 }
 
 /**
@@ -34,10 +42,9 @@ string Graph::readString(ifstream& in) {
 
 /**
  * @brief Lê o grafo do arquivo.
- * @param filename_ Caminho do arquivo.
  * @return Grafo carregado do arquivo.
  */
-map<Key, list<pair<Neighbor, Cost>>> Graph::readGraph(const string& filename_) {
+map<Key, list<pair<Neighbor, Cost>>> Graph::readGraph() {
     ifstream in(filename, std::ios::binary);
     if (!in) return {};
 
@@ -83,9 +90,8 @@ void Graph::writeString(ofstream& out, const string& s) {
 
 /**
  * @brief Persiste o grafo no arquivo.
- * @param filename_ Caminho do arquivo.
  */
-void Graph::writeGraph(const string& filename_) {
+void Graph::writeGraph() {
     ofstream out(filename, std::ios::binary);
     if (!out) return;
 
@@ -139,4 +145,5 @@ void Graph::insertVertex(string key) {
  */
 void Graph::insertEdge(string keyA, string keyB, int cost) {
     adjList[keyA].push_back({keyB, cost});
+    adjList[keyB].push_back({keyA, cost});
 }
