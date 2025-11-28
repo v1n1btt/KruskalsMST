@@ -1,190 +1,188 @@
 /**
 * @file Graph.cpp
- * @authors
- *   Francisco Eduardo Fontenele - 15452569
- *   Vinicius Botte - 15522900
- *
- * AED II - Trabalho 2
- */
+* @authors
+*   Francisco Eduardo Fontenele - 15452569
+*   Vinicius Botte - 15522900
+*
+* \brief Implementação da classe Graph para redes de computadores.
+*
+* \details Oferece CRUD de vértices/arestas, busca, impressão, importação .txt e persistência binária.
+*
+* \pre O arquivo binário deve ser acessível; chaves devem ser estáveis ao longo do uso.
+* \post O estado do grafo é refletido no arquivo quando o objeto é destruído.
+*/
 
 #include "Graph.h"
+#include "NetworkTopologyParser.h"
 #include <iostream>
-
+#include <fstream>
+#include <utility>
 using namespace std;
 
-/**
- * @brief Constrói grafo a partir do arquivo
- * @param filename_ Caminho do arquivo.
- */
-Graph::Graph(const string& filename_) {
-    filename = filename_;
-    adjList = readGraph();
+static bool containsNeighbor(const list<pair<string,int>>& lst, const string& k, int* cost) {
+    for (const auto& p : lst) {
+        if (p.first == k) {
+            if (cost) *cost = p.second;
+            return true;
+        }
+    }
+    return false;
 }
 
-/**
- * @brief Salva as alterações no arquivo binário.
- */
-Graph::~Graph() {
-    writeGraph();
-}
-
-/**
- * @brief Lê uma string do arquivo binário.
- * @return String lida do arquivo.
- */
 string Graph::readString(ifstream& in) {
-    int len;
+    int len = 0;
     in.read(reinterpret_cast<char*>(&len), sizeof(int));
-    string s(len, '\0');
+    if (len <= 0) return string();
+    string s(static_cast<size_t>(len), '\0');
     in.read(&s[0], len);
     return s;
 }
 
-/**
- * @brief Lê o grafo do arquivo.
- * @return Grafo carregado do arquivo.
- */
-map<Key, list<pair<Neighbor, Cost>>> Graph::readGraph() {
-    ifstream in(filename, std::ios::binary);
+map<string, list<pair<string, int>>> Graph::readGraph() {
+    ifstream in(filename, ios::binary);
     if (!in) return {};
-
-    // Lê número de vértices
-    int n;
+    int magic = 0, version = 0, n = 0;
+    in.read(reinterpret_cast<char*>(&magic), sizeof(int));
+    in.read(reinterpret_cast<char*>(&version), sizeof(int));
+    if (!in || magic != MAGIC) return {};
+    if (version != VERSION) return {};
     in.read(reinterpret_cast<char*>(&n), sizeof(int));
-
-    map<Key, list<pair<Neighbor, Cost>>> adjList;
-
-    for(int i = 0; i < n; i++) {
+    map<string, list<pair<string, int>>> result;
+    for (int i = 0; i < n; ++i) {
         string key = readString(in);
-
-        // Lê grau do vértice
-        int degree;
+        int degree = 0;
         in.read(reinterpret_cast<char*>(&degree), sizeof(int));
-
-        list<pair<Neighbor, Cost>> neighbors;
-
-        // Lê vértices adjacentes e seus pesos
-        for(int j = 0; j < degree; j++){
+        list<pair<string,int>> neighbors;
+        for (int j = 0; j < degree; ++j) {
             string nb = readString(in);
-            int cost;
-
+            int cost = 0;
             in.read(reinterpret_cast<char*>(&cost), sizeof(int));
-            neighbors.push_back({nb, cost});
+            neighbors.emplace_back(nb, cost);
         }
-
-        adjList[key] = move(neighbors);
+        result[key] = std::move(neighbors);
     }
-
-    return adjList;
+    return result;
 }
 
-/**
- * @brief Escreve uma string no arquivo binário.
- * @param s String a ser escrita.
- */
 void Graph::writeString(ofstream& out, const string& s) {
-    int len = s.size();
+    int len = static_cast<int>(s.size());
     out.write(reinterpret_cast<const char*>(&len), sizeof(int));
-    out.write(s.data(), len);
+    if (len > 0) out.write(s.data(), len);
 }
 
-/**
- * @brief Persiste o grafo no arquivo.
- */
-void Graph::writeGraph() {
-    ofstream out(filename, std::ios::binary);
+void Graph::writeGraph() const {
+    ofstream out(filename, ios::binary | ios::trunc);
     if (!out) return;
-
-    // Escreve número de vértices
-    int n = adjList.size();
+    out.write(reinterpret_cast<const char*>(&MAGIC), sizeof(int));
+    out.write(reinterpret_cast<const char*>(&VERSION), sizeof(int));
+    int n = static_cast<int>(adjList.size());
     out.write(reinterpret_cast<const char*>(&n), sizeof(int));
-
-    for(const auto& [key, neighbors] : adjList){
-        writeString(out, key);
-
-        // Escreve grau do vértice
-        int degree = neighbors.size();
+    for (const auto& kv : adjList) {
+        writeString(out, kv.first);
+        int degree = static_cast<int>(kv.second.size());
         out.write(reinterpret_cast<const char*>(&degree), sizeof(int));
-
-        // Escreve vértices adjacentes com pesos
-        for(const auto& [nb, cost] : neighbors){
-            writeString(out, nb);
-            out.write(reinterpret_cast<const char*>(&cost), sizeof(int));
+        for (const auto& nb : kv.second) {
+            writeString(out, nb.first);
+            out.write(reinterpret_cast<const char*>(&nb.second), sizeof(int));
         }
     }
 }
 
-/**
- * @brief Exibe o grafo completo.
- */
-void Graph::displayGraph() {
-    cout << "n = " << adjList.size() << endl;
-    cout << "Lista de adjacência para o grafo:" << endl;
-    for (auto& i : adjList) {
-        cout << i.first << " -> ";
-        for(auto& j : i.second) {
-            cout << j.first << "(" << j.second << ")" << " ";
+Graph::Graph(const string& filename_) : filename(filename_) {
+    adjList = readGraph();
+    if (adjList.empty()) writeGraph();
+}
+
+Graph::~Graph() {
+    writeGraph();
+}
+
+void Graph::displayGraph() const {
+    cout << "\n====================\n";
+    cout << "Estado atual do grafo\n";
+    cout << "====================\n";
+    cout << "n = " << adjList.size() << "\n";
+    cout << "Lista de adjacencia:\n";
+    for (const auto& kv : adjList) {
+        cout << "  " << kv.first << " -> ";
+        for (const auto& p : kv.second) {
+            cout << p.first << "(" << p.second << ") ";
         }
-        cout << endl;
+        cout << "\n";
+    }
+    cout << "\n";
+}
+
+bool Graph::hasVertex(const string& key) const {
+    return adjList.find(key) != adjList.end();
+}
+
+bool Graph::hasEdge(const string& a, const string& b, int* outCost) const {
+    auto it = adjList.find(a);
+    if (it == adjList.end()) return false;
+    return containsNeighbor(it->second, b, outCost);
+}
+
+void Graph::insertVertex(const string& key) {
+    if (!hasVertex(key)) adjList[key] = {};
+}
+
+void Graph::insertEdge(const string& a, const string& b, int cost) {
+    if (!hasVertex(a) || !hasVertex(b)) return;
+    int tmp;
+    if (!hasEdge(a, b, &tmp)) {
+        adjList[a].emplace_back(b, cost);
+        adjList[b].emplace_back(a, cost);
     }
 }
 
-/**
- * @brief Insere novo vértice no grafo
- * @param key Chave do vértice
- */
-void Graph::insertVertex(string key) {
-    adjList[key] = {};
-}
-
-/**
- * @brief Insere nova aresta no grafo.
- * @param keyA Chave do primeiro vértice a ser conectado
- * @param keyB Chave do segundo vértice a ser conectado
- * @param cost Custo da aresta
- */
-void Graph::insertEdge(string keyA, string keyB, int cost) {
-    adjList[keyA].push_back({keyB, cost});
-    adjList[keyB].push_back({keyA, cost});
-}
-
-/**
- * @brief Remove uma aresta do grafo.
- * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
- * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
- */
-void Graph::deleteEdge(string keyA, string keyB) {
-    auto it = adjList.find(keyA);
-    if (it == adjList.end()) {
-        cout << "Aresta nao encontrada." << endl;
-        return;
+void Graph::deleteUndirectedEdge(const string& a, const string& b) {
+    auto ita = adjList.find(a);
+    if (ita != adjList.end()) {
+        ita->second.remove_if([&](const pair<string,int>& p){ return p.first == b; });
     }
-
-    it->second.remove_if([keyB](const pair<string, int>& p){
-        return p.first == keyB;
-    });
+    auto itb = adjList.find(b);
+    if (itb != adjList.end()) {
+        itb->second.remove_if([&](const pair<string,int>& p){ return p.first == a; });
+    }
 }
 
-/**
- * @brief Remove uma aresta de um grafo não-direcionado.
- * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
- * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
- */
-void Graph::deleteUndirectedEdge(string keyA, string keyB){
-    deleteEdge(keyA, keyB);
-    deleteEdge(keyB, keyA);
-}
-
-/**
- * @brief Remove um vértice do grafo e apaga todas as arestas conectadas à ele.
- * @param keyA Chave do vértice a ser removido.
- */
-void Graph::deleteVertex(string key){
+void Graph::deleteVertex(const string& key) {
     adjList.erase(key);
-
-    for (auto& [v, adj] : adjList) {
-        adj.remove_if([key](const pair<string, int>& p){
-            return p.first == key;
-        });
+    for (auto& kv : adjList) {
+        kv.second.remove_if([&](const pair<string,int>& p){ return p.first == key; });
     }
+}
+
+vector<Edge> Graph::getEdgesUnique() const {
+    vector<Edge> edges;
+    for (const auto& kv : adjList) {
+        const auto& u = kv.first;
+        for (const auto& p : kv.second) {
+            const auto& v = p.first;
+            int w = p.second;
+            if (u < v) edges.emplace_back(u, v, w);
+        }
+    }
+    return edges;
+}
+
+void Graph::importFromTxt(const string& path) {
+    vector<string> verts;
+    vector<Edge> edges;
+    NetworkTopologyParser::parse(path, verts, edges);
+    for (const auto& v : verts) insertVertex(v);
+    for (const auto& e : edges) insertEdge(e.u(), e.v(), e.weight());
+}
+
+void Graph::clearAndPersist() {
+    adjList.clear();
+    writeGraph();
+}
+
+vector<string> Graph::getAllVertices() const {
+    vector<string> vs;
+    vs.reserve(adjList.size());
+    for (const auto& kv : adjList) vs.push_back(kv.first);
+    return vs;
 }

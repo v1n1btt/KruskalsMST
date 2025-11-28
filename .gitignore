@@ -1,3 +1,40 @@
 # Binary files
 *.bin
 *.exe
+# Build directory
+/build/
+
+# CMake / CLion build dirs
+/cmake-build-debug/
+/cmake-build-release/
+/cmake-build-*/
+
+# Object & link artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# Compilation database (opcional; remova se quiser versionar)
+compile_commands.json
+
+# IDE / editor configs
+/.idea/
+/.vscode/
+
+# Python
+__pycache__/
+*.pyc
+/.venv/
+
+# Exported images (visualize.py)
+*.png
+*.svg
+
+# OS junk
+.DS_Store
+Thumbs.db

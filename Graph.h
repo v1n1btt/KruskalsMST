@@ -1,103 +1,133 @@
 /**
 * @file Graph.h
- * @authors
- *   Francisco Eduardo Fontenele - 15452569
- *   Vinicius Botte - 15522900
- *
- * AED II - Trabalho 2
- */
+* @authors
+*   Francisco Eduardo Fontenele - 15452569
+*   Vinicius Botte - 15522900
+*
+* \brief Classe que representa um grafo não-direcionado e ponderado usando lista de adjacência.
+*
+* \details Focado em redes de computadores: vértices são dispositivos e arestas são links com custo.
+*          Oferece operações de criação, inserção, remoção, busca, impressão, importação de .txt
+*          e persistência em arquivo binário.
+*
+* \pre O arquivo binário será criado se não existir; chaves devem ser adequadas ao contexto.
+* \post Instâncias mantêm estado consistente e operações atualizam a persistência ao finalizar.
+*/
 
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <fstream>
 #include <map>
 #include <list>
 #include <string>
-
+#include <vector>
+#include <fstream>
+#include "Edge.h"
 using namespace std;
-using Key = string;
-using Neighbor = string;
-using Cost = int;
 
 class Graph {
-    private:
-        std::string filename;
-        map<Key, list<pair<Neighbor, Cost>>> adjList;
+private:
+    string filename;
+    map<string, list<pair<string, int>>> adjList;
+    static constexpr int MAGIC = 0x47524150;
+    static constexpr int VERSION = 1;
 
-        /**
-         * @brief Lê uma string do arquivo binário.
-         * @return String lida do arquivo.
-         */
-        string readString(ifstream& in);
+    static string readString(ifstream& in);
+    map<string, list<pair<string, int>>> readGraph();
+    static void writeString(ofstream& out, const string& s);
+    void writeGraph() const;
 
-        /**
-         * @brief Lê o grafo do arquivo.
-         * @return Grafo carregado do arquivo.
-         */
-        map<Key, list<pair<Neighbor, Cost>>> readGraph();
+public:
+    /**
+     * \brief Constrói o grafo vinculado a um arquivo binário.
+     * \pre O caminho deve ser válido; cria arquivo com cabeçalho se necessário.
+     * \post O grafo é carregado e pronto para operações.
+     */
+    explicit Graph(const string& filename_);
 
-        /**
-         * @brief Escreve uma string no arquivo binário.
-         * @param s String a ser escrita.
-         */
-        void writeString(ofstream& out, const string& s);
+    /**
+     * \brief Destrói o grafo persistindo alterações.
+     * \pre O objeto deve estar em estado consistente.
+     * \post O arquivo binário é atualizado com o estado final.
+     */
+    ~Graph();
 
-        /**
-         * @brief Persiste o grafo no arquivo.
-         */
-        void writeGraph();
+    /**
+     * \brief Imprime o grafo completo.
+     * \pre O grafo deve estar carregado.
+     * \post A saída padrão contém a lista de adjacência.
+     */
+    void displayGraph() const;
 
-    public:
-        /**
-         * @brief Constrói grafo a partir do arquivo
-         * @param filename_ Caminho do arquivo.
-         */
-        explicit Graph(const string& filename_);
+    /**
+     * \brief Busca um vértice.
+     * \pre A chave não deve ser vazia.
+     * \post Retorna verdadeiro se existir.
+     */
+    bool hasVertex(const string& key) const;
 
-        /**
-         * @brief Salva as alterações no arquivo binário.
-         */
-        ~Graph();
+    /**
+     * \brief Busca uma aresta.
+     * \pre As chaves devem estar definidas.
+     * \post Retorna verdadeiro se houver aresta; opcionalmente retorna custo.
+     */
+    bool hasEdge(const string& a, const string& b, int* outCost = nullptr) const;
 
-        /**
-         * @brief Exibe o grafo completo.
-         */
-        void displayGraph();
+    /**
+     * \brief Insere um vértice.
+     * \pre A chave não deve colidir.
+     * \post O vértice passa a existir.
+     */
+    void insertVertex(const string& key);
 
-        /**
-         * @brief Insere novo vértice no grafo
-         * @param key Chave do vértice
-         */
-        void insertVertex(string key);
+    /**
+     * \brief Insere uma aresta não-direcionada com custo.
+     * \pre Ambos vértices devem existir.
+     * \post A aresta é adicionada nos dois sentidos.
+     */
+    void insertEdge(const string& a, const string& b, int cost);
 
-        /**
-         * @brief Insere nova aresta no grafo.
-         * @param keyA Chave do primeiro vértice a ser conectado
-         * @param keyB Chave do segundo vértice a ser conectado
-         * @param cost Custo da aresta
-         */
-        void insertEdge(string keyA, string keyB, int cost);
+    /**
+     * \brief Remove uma aresta não-direcionada.
+     * \pre Ambos vértices devem existir.
+     * \post A aresta é removida de ambos os lados.
+     */
+    void deleteUndirectedEdge(const string& a, const string& b);
 
-        /**
-         * @brief Remove uma aresta do grafo.
-         * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
-         * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
-         */
-        void deleteEdge(string keyA, string keyB);
+    /**
+     * \brief Remove um vértice e incidentes.
+     * \pre O vértice deve existir.
+     * \post O vértice e ligações são removidos.
+     */
+    void deleteVertex(const string& key);
 
-        /**
-         * @brief Remove uma aresta de um grafo não-direcionado.
-         * @param keyA Chave do primeiro vértice conectado à aresta a ser removida.
-         * @param keyB Chave do segundo vértice conectado à aresta a ser removida.
-         */
-        void deleteUndirectedEdge(string keyA, string keyB);
+    /**
+     * \brief Recupera arestas únicas.
+     * \pre O grafo deve estar carregado.
+     * \post Retorna vetor de arestas sem duplicidade.
+     */
+    vector<Edge> getEdgesUnique() const;
 
-        /**
-         * @brief Remove um vértice do grafo e apaga todas as arestas conectadas à ele.
-         * @param keyA Chave do vértice a ser removido.
-         */
-        void deleteVertex(string key);
+    /**
+     * \brief Importa topologia de arquivo texto.
+     * \pre O arquivo deve seguir o formato suportado.
+     * \post Vértices e arestas são adicionados.
+     */
+    void importFromTxt(const string& path);
+
+    /**
+     * \brief Limpa o grafo e regrava o binário vazio.
+     * \pre O arquivo binário deve ser acessível para escrita.
+     * \post O grafo fica vazio e o arquivo binário contém cabeçalho com zero vértices.
+     */
+    void clearAndPersist();
+
+    /**
+     * \brief Retorna todas as chaves de vértices do grafo.
+     * \pre O grafo deve estar carregado.
+     * \post Vetor com as chaves existentes, sem ordem garantida.
+     */
+    vector<string> getAllVertices() const;
 };
 
 #endif
